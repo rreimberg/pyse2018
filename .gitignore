@@ -6,4 +6,5 @@
 .coverage
 htmlcov/
 __pycache__
+.pytest_cache
 config/local.ini*
