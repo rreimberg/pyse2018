@@ -23,3 +23,4 @@ class Configuration(object):
     )
 
     SQLALCHEMY_DATABASE_URI = config.get('DATABASE', 'URI')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
