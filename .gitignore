@@ -1,0 +1,9 @@
+*.pyc
+.venv
+*.swp
+*.sqlite
+.cache/
+.coverage
+htmlcov/
+__pycache__
+config/local.ini*
