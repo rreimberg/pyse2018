@@ -1,5 +1,7 @@
 FROM python:3.6
 
+RUN apt-get update && pip install -U pip
+
 RUN mkdir -p /etc/pyse2018/ /source/
 
 COPY requirements/base.txt /requirements.txt
