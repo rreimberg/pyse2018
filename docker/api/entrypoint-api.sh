@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cd /source/ && python manage.py runserver -t 0.0.0.0:80
+cd /source/ && python manage.py runserver --host 0.0.0.0 --port 80

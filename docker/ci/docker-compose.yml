@@ -1,0 +1,67 @@
+version: '3.3'
+services:
+
+  integration:
+    image: pyse2018-ci
+    links:
+      - rabbit
+      - mysql
+      - pyse2018-api
+      - pyse2018-worker
+
+  pyse2018-api:
+    image: pyse2018-api
+    ports:
+      - "8080:80"
+    networks:
+      backend:
+        aliases:
+        -  pyse2018-api.docker
+
+  pyse2018-worker:
+    image: pyse2018-worker
+    networks:
+      backend:
+        aliases:
+        -  pyse2018-worker.docker
+
+  mysql:
+    image: mysql:5.7
+    environment:
+       - MYSQL_ROOT_PASSWORD=secret
+    ports:
+      - "3306:3306"
+    networks:
+      backend:
+        aliases:
+        -  mysql.docker
+
+  mysql-testing:
+    image: rreimberg/mysql-tmpfs
+    environment:
+       - TMPFS_SIZE=300
+    ports:
+      - "3307:3306"
+    privileged: true
+    cap_add:
+      - ALL
+    networks:
+      backend:
+        aliases:
+        -  mysql-testing.docker
+
+  rabbit:
+    image: rabbitmq
+    environment:
+      - RABBITMQ_ERLANG_COOKIE='secret cookie here'
+      - RABBITMQ_NODENAME=rabbit@rabbit
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      backend:
+        aliases:
+        -  rabbit.docker
+
+networks:
+  backend:

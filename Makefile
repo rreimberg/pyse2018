@@ -31,8 +31,8 @@ integration: ## integration: Run continuous integration.
 	make build
 	cp docker/ci/* .
 	docker build -t pyse2018-ci .
-	rm Dockerfile entrypoint*.sh
-#	docker-compose -f docker/ci/docker-compose.yml up integration
+	rm Dockerfile entrypoint*.sh docker-compose.yml
+	docker-compose -f docker/ci/docker-compose.yml up integration
 
 test:  ## Run tests.
 	make unit
