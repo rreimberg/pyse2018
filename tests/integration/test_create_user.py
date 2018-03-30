@@ -3,7 +3,18 @@ import json
 from datetime import datetime
 
 import requests
+from celery.signals import after_task_publish
 from celery.result import AsyncResult
+
+
+# connect listener to get AsyncResult id for save_on_database delay
+@after_task_publish.connect(sender='save_on_database')
+def save_on_database_handler(sender=None, body=None, **kwargs):
+    global ASYNC_RESULT
+    ASYNC_RESULT = AsyncResult(body['id'])
+
+    # disconnect listener
+    after_task_publish.disconnect(save_on_database_handler)
 
 
 def test_create_user_with_missing_parameters_returns_bad_request(base_url, users):
@@ -45,7 +56,8 @@ def test_create_user_with_success_persists_data_on_celery_task(base_url, users):
     assert response.status_code == 404
 
     # Wait for asyncronous task execution
-    import ipdb; ipdb.set_trace()
+    ASYNC_RESULT.wait()
+    assert ASYNC_RESULT.status == 'SUCCESS'
 
     # Retrieve user
     response = requests.get(base_url + new_user_data['uuid'] + '/')
