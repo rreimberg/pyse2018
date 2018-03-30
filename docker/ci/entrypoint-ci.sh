@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cd /source/ && pytest tests/integration
+cd /source/ && pytest -vv tests/integration
