@@ -5,6 +5,14 @@ help: ## help: Show this help message.
 	@echo "targets:"
 	@grep -Eh '^.+:(\w+)?\ ##\ .+' ${MAKEFILE_LIST} | cut -d ' ' -f '3-' | column -t -s ':'
 
+build: ## build: Build app containers.
+	cp docker/api/* .
+	docker build -t pyse2018-api .
+	rm Dockerfile entrypoint*.sh
+	cp docker/worker/* .
+	docker build -t pyse2018-worker .
+	rm Dockerfile entrypoint*.sh
+
 clean: ## clean: Cleanup.
 	find . -name *.pyc -delete
 	find . -name *.pyo -delete
@@ -19,11 +27,12 @@ coverage-html: ## coverage-html: Coverage with HTML report.
 	xdg-open htmlcov/index.html &
 
 integration: ## integration: Run continuous integration.
-	docker -f docker/api/Dockerfile
-	docker -f docker/worker/Dockerfile
-	docker -f docker/tests/Dockerfile
-
-	docker-compose up integration
+	cp config/ci.ini docker-config.ini
+	make build
+	cp docker/ci/* .
+	docker build -t pyse2018-ci .
+	rm Dockerfile entrypoint*.sh
+#	docker-compose -f docker/ci/docker-compose.yml up integration
 
 test:  ## Run tests.
 	make unit
