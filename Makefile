@@ -20,10 +20,10 @@ clean: ## clean: Cleanup.
 	rm -Rf .coverage
 
 coverage: ## coverage: Coverage.
-	CONFIG_FILE=config/test.ini py.test --cov=sample --cov-report term-missing
+	CONFIG_FILE=config/test.ini py.test --cov=sample --cov-report term-missing tests/unit
 
 coverage-html: ## coverage-html: Coverage with HTML report.
-	CONFIG_FILE=config/test.ini py.test --cov=sample --cov-report html
+	CONFIG_FILE=config/test.ini py.test --cov=sample --cov-report html tests/unit
 	xdg-open htmlcov/index.html &
 
 integration: ## integration: Run continuous integration.
@@ -39,4 +39,4 @@ test:  ## Run tests.
 	make coverage
 
 unit: ## unit: Unit tests.
-	CONFIG_FILE=config/test.ini py.test
+	CONFIG_FILE=config/test.ini py.test tests/unit

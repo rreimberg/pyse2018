@@ -14,6 +14,7 @@ config.read(CONFIG_FILE)
 class Configuration(object):
 
     BROKER_URL = config.get('MQ', 'BROKER_URL')
+    RESULT_BACKEND = config.get('MQ', 'RESULT_BACKEND', fallback=None)
 
     CELERY_QUEUES = (
         Queue(
