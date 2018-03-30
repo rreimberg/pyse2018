@@ -11,3 +11,9 @@ class User(db.Model):
     name = db.Column(db.String(32), index=True)
     email = db.Column(db.String(32), index=True)
     created_at = db.Column(db.DateTime(), default=datetime.utcnow)
+
+    def __eq__(self, other):
+        """Workaround to compare objects in transient state."""
+        comparable_fields = ['uuid', 'name', 'email']
+        return all([getattr(self, field) == getattr(other, field)
+                    for field in comparable_fields])
