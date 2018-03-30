@@ -5,6 +5,7 @@ from flask import abort, jsonify, request
 from flask.views import MethodView
 from sqlalchemy.orm.exc import NoResultFound
 
+from sample.decorators import requires_json
 from sample.models import User
 from sample.tasks import save_on_database
 
@@ -22,11 +23,12 @@ class UserAPI(MethodView):
             'uuid': user.uuid,
             'name': user.name,
             'email': user.email,
-            'created_at': user.created_at.strftime('%Y-%m-%d %H:%i:%s')
+            'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S')
         }
 
         return jsonify(response)
 
+    @requires_json
     def post(self):
 
         try:
