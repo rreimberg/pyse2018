@@ -4,8 +4,9 @@ services:
   integration:
     image: pyse2018-ci
     links:
-      - rabbit
+      - redis
       - mysql
+      - rabbit
       - pyse2018-api
       - pyse2018-worker
 
@@ -62,6 +63,15 @@ services:
       backend:
         aliases:
         -  rabbit.docker
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      backend:
+        aliases:
+        -  redis.docker
 
 networks:
   backend:
