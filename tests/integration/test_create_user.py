@@ -1,20 +1,31 @@
 
 import json
 from datetime import datetime
+from urllib.parse import urlparse
 
 import requests
-from celery.signals import after_task_publish
+from celery import current_app
 from celery.result import AsyncResult
+from redis import Redis
 
 
-# connect listener to get AsyncResult id for save_on_database delay
-@after_task_publish.connect(sender='save_on_database')
-def save_on_database_handler(sender=None, body=None, **kwargs):
-    global ASYNC_RESULT
-    ASYNC_RESULT = AsyncResult(body['id'])
+def _wait_for_task_execution():
+    parsed = urlparse(current_app.conf['CELERY_RESULT_BACKEND'])
+    kwargs = {
+        'host': parsed.hostname
+    }
 
-    # disconnect listener
-    after_task_publish.disconnect(save_on_database_handler)
+    if parsed.port:
+        kwargs['port'] = parsed.port
+
+    if parsed.path:
+        kwargs['db'] = parsed.path.strip('/')
+
+    client = Redis(**kwargs)
+    for key in client.scan_iter():
+        result = AsyncResult(key[17:])
+        result.wait()
+        assert result.status == 'SUCCESS'
 
 
 def test_create_user_with_missing_parameters_returns_bad_request(base_url, users):
@@ -56,8 +67,7 @@ def test_create_user_with_success_persists_data_on_celery_task(base_url, users):
     assert response.status_code == 404
 
     # Wait for asyncronous task execution
-    ASYNC_RESULT.wait()
-    assert ASYNC_RESULT.status == 'SUCCESS'
+    _wait_for_task_execution()
 
     # Retrieve user
     response = requests.get(base_url + new_user_data['uuid'] + '/')

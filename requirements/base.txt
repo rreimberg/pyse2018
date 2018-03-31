@@ -1,4 +1,4 @@
-celery==4.1.0
+celery[redis]==4.1.0
 Flask==0.12.2
 Flask-SQLAlchemy==2.3.2
 flask-script==2.0.6

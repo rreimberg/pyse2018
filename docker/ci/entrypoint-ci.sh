@@ -1,7 +1,5 @@
 #!/bin/bash
 
-/bin/bash
-
 # Application execution
 echo "Checking DB service availability..."
 while true; do
@@ -15,4 +13,4 @@ done
 
 echo "Starting development server"
 
-cd /source/ && pytest -vv tests/integration
+cd /source/ && pytest -vv tests/integration/

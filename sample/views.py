@@ -39,7 +39,7 @@ class UserAPI(MethodView):
 
         user_uuid = uuid4().hex
 
-        save_on_database.delay(user_uuid, name, email)
+        save_on_database.apply_async((user_uuid, name, email), countdown=5)
 
         response = {
             'uuid': user_uuid,
