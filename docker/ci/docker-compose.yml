@@ -3,12 +3,14 @@ services:
 
   integration:
     image: pyse2018-ci
-    links:
+    depends_on:
       - redis
       - mysql
       - rabbit
       - pyse2018-api
       - pyse2018-worker
+    networks:
+      - backend
 
   pyse2018-api:
     image: pyse2018-api
