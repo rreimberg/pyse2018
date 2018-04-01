@@ -65,7 +65,7 @@ def test_post_user_with_success(client, mocker):
     uuid_mock = mocker.patch('sample.views.uuid4')
     uuid_mock.return_value = fake_uuid
 
-    celery_delay_mock = mocker.patch('sample.views.save_on_database.delay')
+    apply_async_mock = mocker.patch('sample.views.save_on_database.apply_async')
 
     payload = {
         'name': 'username',
@@ -86,7 +86,8 @@ def test_post_user_with_success(client, mocker):
     }
     assert response.json == expected_response
 
-    assert celery_delay_mock.call_count == 1
-    assert celery_delay_mock.call_args == (
-        ('mocked-uuid', 'username', 'fakeemail@user.com'),
+    assert apply_async_mock.call_count == 1
+    assert apply_async_mock.call_args == (
+        (('mocked-uuid', 'username', 'fakeemail@user.com'), ),
+        {'countdown': 5}
     )
