@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 import MySQLdb
 import pytest
+from redis import Redis
 
 from sample.app import db
 from sample.models import User
@@ -37,18 +38,41 @@ def create_db(app):
     db.create_all()
 
 
+@pytest.fixture(scope='session')
+def redis_client(app):
+    result = urlparse(app.config['CELERY_RESULT_BACKEND'])
+    connection_params = {
+        'host': result.hostname
+    }
+
+    if result.port:
+        connection_params['port'] = result.port
+
+    if result.path:
+        connection_params['db'] = result.path.strip('/')
+
+    client = Redis(**connection_params)
+    return client
+
+
 @pytest.yield_fixture(autouse=True)
-def truncate_db(create_db):
+def truncate_db(create_db, redis_client):
     yield
 
     # teardown
+
+    # truncate mysql tables
     connection = db.engine.connect()
     transaction = connection.begin()
     connection.execute('SET FOREIGN_KEY_CHECKS = 0;')
-    for table in db.get_tables_for_bind():  # meta.sorted_tables:
+    for table in db.get_tables_for_bind():
         connection.execute(table.delete())
     connection.execute('SET FOREIGN_KEY_CHECKS = 1;')
     transaction.commit()
+
+    # clear celery results
+    for key in redis_client.scan_iter():
+        redis_client.delete(key)
 
 
 @pytest.fixture(scope='session')
