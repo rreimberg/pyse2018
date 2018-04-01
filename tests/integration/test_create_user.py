@@ -1,28 +1,18 @@
 
 import json
 from datetime import datetime
-from urllib.parse import urlparse
 
 import requests
-from celery import current_app
 from celery.result import AsyncResult
-from redis import Redis
 
 
-def _wait_for_task_execution():
-    parsed = urlparse(current_app.conf['CELERY_RESULT_BACKEND'])
-    kwargs = {
-        'host': parsed.hostname
-    }
+def wait_for_task_execution(client):
+    keys = None
 
-    if parsed.port:
-        kwargs['port'] = parsed.port
+    while not keys:
+        _, keys = client.scan()
 
-    if parsed.path:
-        kwargs['db'] = parsed.path.strip('/')
-
-    client = Redis(**kwargs)
-    for key in client.scan_iter():
+    for key in keys:
         result = AsyncResult(key[17:])
         result.wait()
         assert result.status == 'SUCCESS'
@@ -42,7 +32,7 @@ def test_create_user_with_missing_parameters_returns_bad_request(base_url, users
     assert response.status_code == 400
 
 
-def test_create_user_with_success_persists_data_on_celery_task(base_url, users):
+def test_create_user_with_success_persists_data_on_celery_task(base_url, users, redis_client):
 
     headers = {
         'Content-Type': 'application/json',
@@ -67,7 +57,7 @@ def test_create_user_with_success_persists_data_on_celery_task(base_url, users):
     assert response.status_code == 404
 
     # Wait for asyncronous task execution
-    _wait_for_task_execution()
+    wait_for_task_execution(redis_client)
 
     # Retrieve user
     response = requests.get(base_url + new_user_data['uuid'] + '/')
@@ -75,4 +65,4 @@ def test_create_user_with_success_persists_data_on_celery_task(base_url, users):
 
     # Assert created_at
     created_at = datetime.strptime(response.json()['created_at'], '%Y-%m-%d %H:%M:%S')
-    assert (request_finished_at - created_at).seconds >= 5
+    assert (created_at - request_finished_at).seconds >= 5
