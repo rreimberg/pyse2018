@@ -35,6 +35,7 @@ def create_db(app):
     if not database_already_exists:
         cursor.execute('CREATE DATABASE {}'.format(db_name))
 
+    db.drop_all()
     db.create_all()
 
 
